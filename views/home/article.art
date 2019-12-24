@@ -1,0 +1,75 @@
+{{extend './common/layout.art'}}
+{{block 'link'}}
+<link rel="stylesheet" href="/home/css/article.css">
+{{/block}}
+{{block 'main'}}
+	<!-- 头部框架开始 -->
+	<div class="header">
+		<div class="w1100">
+			<!-- 网站logo开始 -->
+			<h1 class="logo fl">
+				<a href="default.html"><img src="images/logo.png" alt="黑马程序员"></a>
+			</h1>
+			<!-- 网站logo结束 -->
+			<!-- 网站导航开始 -->
+			<ul class="navigation fr">
+				<li>
+					<a href="/home">首页</a>
+				</li>
+				<li>
+					<a href="/admin/login">登录</a>
+				</li>
+			</ul>
+			<!-- 网站导航结束 -->
+		</div>
+	</div>
+	<!-- 头部框架结束 -->
+	<!-- 文章框架开始 -->
+	<div class="article">
+		<div class="w1100">
+			<div class="container">
+				<div class="article-header">
+					<h3 class="article-title">{{article.title}}</h3>
+					<div class="article-info">
+						<span class="author">{{article.author.username}}</span>
+						<span>{{dateFormat(article.publishDate,'yyyy-mm-dd')}}</span>
+					</div>
+				</div>
+				<div class="article-content">
+					{{@article.content}}
+				</div>
+				<div class="article-comment">
+				{{if username}}
+					<h4>评论</h4>
+					
+					<form class="comment-form" action="/home/comment" method="POST">
+						<input type="hidden" name="uid" value="{{userid}}">
+						<input type="hidden" name="aid" value="{{@article._id}}">
+						<textarea class="comment" name="content"></textarea>
+						<div class="items">
+							<input type="submit" value="提交">
+						</div>
+					</form>
+					{{else}}
+					<h2>请先<a href="/admin/login">登录</a>，在进行评论</h2>
+					{{/if}}
+					<div class="comment-list">
+					{{each comment}}
+						<div class="mb10">
+							<div class="article-info">
+								<span class="author">{{$value.uid.username}}</span>
+								<span>{{dateFormat($value.publishDate,'yyyy-mm-dd')}}</span>
+								<span>{{$value.uid.email}}</span>
+							</div>
+							<div class="comment-content">
+								{{$value.content}}
+							</div>
+						</div>
+						{{/each}}
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- 文章框架结束 -->
+{{/block}}
