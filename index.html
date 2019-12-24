@@ -1,12 +1,282 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
+    <title>cao</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        
+        html,
+        body {
+            height: 100%;
+        }
+        
+        body {
+            overflow: hidden;
+            display: flex;
+            background: #111;
+            perspective: 1000px;
+            transform-style: preserve-3d;
+        }
+        
+        #drag-container,
+        #spin-container {
+            position: relative;
+            display: flex;
+            margin: auto;
+            transform-style: preserve-3d;
+            transform: rotateX(-10deg);
+        }
+        
+        #drag-container img,
+        #drag-container video {
+            transform-style: preserve-3d;
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            line-height: 200px;
+            font-size: 50px;
+            text-align: center;
+            box-shadow: 0 0 8px #fff;
+            -webkit-box-reflect: below 10px linear-gradient(transparent, transparent, #0005);
+        }
+        
+        #drag-container img:hover,
+        #drag-container video:hover {
+            box-shadow: 0 0 15px #fffd;
+            -webkit-box-reflect: below 10px linear-gradient(transparent, transparent, #0007);
+        }
+        
+        #drag-container p {
+            font-family: Serif;
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotateX(90deg);
+            color: #fff;
+        }
+        
+        #ground {
+            width: 900px;
+            height: 900px;
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotateX(90deg);
+            background: -webkit-radial-gradient(center center, farthest-side, #9993, transparent);
+        }
+        
+        #music-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        
+        #carousel-container {
+            width: 100%;
+            height: 100%;
+        }
+        
+        @keyframes spin {
+            from {
+                transform: rotateY(0deg);
+            }
+            to {
+                transform: rotateY(360deg);
+            }
+        }
+        
+        @keyframes spinRevert {
+            from {
+                transform: rotateY(360deg);
+            }
+            to {
+                transform: rotateY(0deg);
+            }
+        }
+    </style>
 </head>
+
 <body>
-    <h2>分支</h2>
+    <div id="drag-container">
+        <div id="spin-container">
+            <img src="../img/veer-133982094.jpg" alt="">
+            <img src="../img/veer-136815608.jpg" alt="">
+            <img src="../img/veer-147356306.jpg" alt="">
+            <img src="../img/veer-150492685.jpg" alt="">
+            <img src="../img/veer-153074291.jpg" alt="">
+            <img src="../img/veer-153802005.jpg" alt="">
+
+            <a target="_blank" href="images/pexels-photo-139829.jpeg">
+                <img src="images/pexels-photo-139829.jpeg" alt="">
+            </a>
+
+            <video controls autoplay="autoplay" loop>
+          <source src="" type="video/mp4">
+        </video>
+
+            <p>3D Tiktok Carousel</p>
+        </div>
+        <div id="ground"></div>
+    </div>
+    <div id="music-container"></div>
 </body>
+<script>
+    var radius = 240;
+    var autoRotate = true;
+    var rotateSpeed = -60;
+    var imgWidth = 120;
+    var imgHeight = 170;
+
+    var bgMusicURL = '';
+    var bgMusicControls = true;
+
+    // ===================== start =======================
+    setTimeout(init, 100);
+
+    var obox = document.getElementById('drag-container');
+    var ospin = document.getElementById('spin-container');
+    var aImg = ospin.getElementsByTagName('img');
+    var aVid = ospin.getElementsByTagName('video');
+    var aEle = [...aImg, ...aVid];
+
+    ospin.style.width = imgWidth + "px";
+    ospin.style.height = imgHeight + "px";
+
+    var ground = document.getElementById('ground');
+    ground.style.width = radius * 3 + "px";
+    ground.style.height = radius * 3 + "px";
+
+    function init(delayTime) {
+        for (var i = 0; i < aEle.length; i++) {
+            aEle[i].style.transform = "rotateY(" + (i * (360 / aEle.length)) + "deg) translateZ(" + radius + "px)";
+            aEle[i].style.transition = "transform 1s";
+            aEle[i].style.transitionDelay = delayTime || (aEle.length - i) / 4 + "s";
+        }
+    }
+
+    function applyTranform(obj) {
+        if (tY > 180) tY = 180;
+        if (tY < 0) tY = 0;
+
+        obj.style.transform = "rotateX(" + (-tY) + "deg) rotateY(" + (tX) + "deg)";
+    }
+
+    function playSpin(yes) {
+        ospin.style.animationPlayState = (yes ? 'running' : 'paused');
+    }
+
+    var sX, sY, nX, nY, desX = 0,
+        desY = 0,
+        tX = 0,
+        tY = 10;
+
+    if (autoRotate) {
+        var animationName = (rotateSpeed > 0 ? 'spin' : 'spinRevert');
+        ospin.style.animation = `${animationName} ${Math.abs(rotateSpeed)}s infinite linear`;
+    }
+
+    if (bgMusicURL) {
+        document.getElementById('music-container').innerHTML += `
+<audio src="${bgMusicURL}" ${bgMusicControls? 'controls': ''} autoplay loop>    
+<p>If you are reading this, it is because your browser does not support the audio element.</p>
+</audio>
+`;
+    }
+
+    if (mobilecheck()) {
+        // ==================== Touch Events ====================
+        document.ontouchstart = function(e) {
+            clearInterval(obox.timer);
+            e = e || window.event;
+            var sX = e.touches[0].clientX,
+                sY = e.touches[0].clientY;
+
+            this.ontouchmove = function(e) {
+                e = e || window.event;
+                var nX = e.touches[0].clientX,
+                    nY = e.touches[0].clientY;
+                desX = nX - sX;
+                desY = nY - sY;
+                tX += desX * 0.1;
+                tY += desY * 0.1;
+                applyTranform(obox);
+                sX = nX;
+                sY = nY;
+            }
+
+            this.ontouchend = function(e) {
+                this.ontouchmove = this.ontouchend = null;
+                obox.timer = setInterval(function() {
+                    desX *= 0.95;
+                    desY *= 0.95;
+                    tX += desX * 0.1;
+                    tY += desY * 0.1;
+                    applyTranform(obox);
+                    playSpin(false);
+                    if (Math.abs(desX) < 0.5 && Math.abs(desY) < 0.5) {
+                        clearInterval(obox.timer);
+                        playSpin(true);
+                    }
+                }, 17);
+            }
+
+            // return false;
+        }
+    } else {
+        // ==================== Mouse Events ====================
+        document.onmousedown = function(e) {
+            clearInterval(obox.timer);
+            e = e || window.event;
+            var sX = e.clientX,
+                sY = e.clientY;
+
+            this.onmousemove = function(e) {
+                e = e || window.event;
+                var nX = e.clientX,
+                    nY = e.clientY;
+                desX = nX - sX;
+                desY = nY - sY;
+                tX += desX * 0.1;
+                tY += desY * 0.1;
+                applyTranform(obox);
+                sX = nX;
+                sY = nY;
+            }
+
+            this.onmouseup = function(e) {
+                this.onmousemove = this.onmouseup = null;
+                obox.timer = setInterval(function() {
+                    desX *= 0.95;
+                    desY *= 0.95;
+                    tX += desX * 0.1;
+                    tY += desY * 0.1;
+                    applyTranform(obox);
+                    playSpin(false);
+                    if (Math.abs(desX) < 0.5 && Math.abs(desY) < 0.5) {
+                        clearInterval(obox.timer);
+                        playSpin(true);
+                    }
+                }, 13);
+            }
+
+            return false;
+        }
+        document.onmousewheel = function(e) {
+            e = e || window.event;
+            var d = e.wheelDelta / 20 || -e.detail;
+            radius += d;
+            init(1);
+        };
+    }
+</script>
+
 </html>
